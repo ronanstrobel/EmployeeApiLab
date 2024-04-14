@@ -17,12 +17,10 @@ public static class MigrationsUtils
         var dbnameToBeCreated = "employeecrud";
         var dbExists = VerifyIfDbExists(dbnameToBeCreated, conn);
 
-        if (dbExists)
-        {
-            logger.LogInformation("Database don't exists, creating database");
-            CreateDatabaseIfNotExists(dbnameToBeCreated, conn);
-        }
+        if (dbExists) return;
         
+        logger.LogInformation("Database don't exists, creating database");
+        CreateDatabaseIfNotExists(dbnameToBeCreated, conn);
     }
 
     private static bool VerifyIfDbExists(string dbnameToBeCreated, NpgsqlConnection conn)
@@ -42,7 +40,7 @@ public static class MigrationsUtils
             throw;
         }
 
-        return resultCommandDatab is null;
+        return resultCommandDatab is not null;
     }
     
     private static void CreateDatabaseIfNotExists(string dbnameToBeCreated, NpgsqlConnection conn)

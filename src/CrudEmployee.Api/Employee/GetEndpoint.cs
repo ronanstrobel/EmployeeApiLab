@@ -22,6 +22,7 @@ public class GetEndpoint:Endpoint<GetEndpoint.GetRequest,GetEndpoint.GetResponse
         {
             Response = new GetResponse(2, "Mike Saul", 31, new GetEndpointResponseAddress("Street 2", "City 2", "State 2", "Country 2"));
         }
+        
         return Task.CompletedTask;
     }
 

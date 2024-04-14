@@ -20,3 +20,8 @@ app.UseFastEndpoints();
 app.RunMigrations();
 app.Run();
 
+public partial class Program
+{
+    protected Program()
+    { }
+}
