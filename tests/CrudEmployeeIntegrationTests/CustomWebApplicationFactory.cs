@@ -1,4 +1,5 @@
 using System.Data.Common;
+using CrudEmployee.Api;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +14,7 @@ public class CustomWebApplicationFactory
 
     private readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder()
         .WithPassword("123456")
-        .WithPortBinding("5432","5432")
+        .WithPortBinding(5432, 5432)
         .Build();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

@@ -1,11 +1,25 @@
+using System.Data;
 using CrudEmployee.Api.Configurations;
+using CrudEmployee.Infrastructure;
 using FastEndpoints;
+using Npgsql;
+using RepoDb;
+
+
+GlobalConfiguration
+    .Setup()
+    .UsePostgreSql();
+
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.RegisterRepositories();
 builder.Services.AddFastEndpoints();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+var connectionString = builder.Configuration.GetConnectionString("employeecrud");
+builder.Services.AddScoped<IDbConnection>((_) => new NpgsqlConnection(connectionString));
 
 var app = builder.Build();
 
@@ -20,8 +34,11 @@ app.UseFastEndpoints();
 app.RunMigrations();
 app.Run();
 
-public partial class Program
+namespace CrudEmployee.Api
 {
-    protected Program()
-    { }
+    public class Program
+    {
+        protected Program()
+        { }
+    }
 }

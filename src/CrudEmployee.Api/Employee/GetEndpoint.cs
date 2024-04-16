@@ -1,9 +1,13 @@
 using CrudEmployee.Api.Utils;
+using CrudEmployee.Domain.Abstractions.Repositories;
 using FastEndpoints;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace CrudEmployee.Api.Employee;
 
-public class GetEndpoint:Endpoint<GetEndpoint.GetRequest,GetEndpoint.GetResponse>
+public class GetEndpoint(IEmployeeRepository employeeRepository):Endpoint<GetEndpoint.GetRequest,Results<Ok<GetEndpoint.GetResponse>, 
+    NotFound, 
+    ProblemDetails>>
 {
     public override void Configure()
     {
@@ -11,22 +15,18 @@ public class GetEndpoint:Endpoint<GetEndpoint.GetRequest,GetEndpoint.GetResponse
         AllowAnonymous();
     }
 
-    public override Task HandleAsync(GetRequest req, CancellationToken ct)
+    public override async Task<Results<Ok<GetResponse>, NotFound, ProblemDetails>> ExecuteAsync(GetRequest req, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
-        if (req.Id == 1)
+        var employee = await employeeRepository.GetByIdAsync(req.Id, ct);
+        if (employee is null)
         {
-            Response = new GetResponse(1, "Jhon Doe", 30,new GetEndpointResponseAddress("Street 1", "City 1", "State 1", "Country 1"));
-        }
-        else if (req.Id == 2)
-        {
-            Response = new GetResponse(2, "Mike Saul", 31, new GetEndpointResponseAddress("Street 2", "City 2", "State 2", "Country 2"));
+            return TypedResults.NotFound();
         }
         
-        return Task.CompletedTask;
+        return TypedResults.Ok(new GetResponse(employee.Id, employee.Name, employee.Age, employee.Salary));
     }
 
-    public record GetRequest(int Id);
-    public record GetResponse(int Id, string Name, int Age, GetEndpointResponseAddress Address);
-    public record GetEndpointResponseAddress(string street, string city, string state, string country);
+    public record GetRequest(long Id);
+    public record GetResponse(long Id, string Name, short Age, decimal Salary);
 }

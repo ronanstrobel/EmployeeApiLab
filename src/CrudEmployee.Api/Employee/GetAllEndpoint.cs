@@ -1,30 +1,31 @@
+using System.Data;
 using CrudEmployee.Api.Utils;
 using FastEndpoints;
+using RepoDb;
 
 namespace CrudEmployee.Api.Employee;
 
-public class GetAllEndpoint : EndpointWithoutRequest<List<GetAllEndpoint.EndpointResponse>>
+public class GetAllEndpoint(IDbConnection dbConnection) : EndpointWithoutRequest<List<GetAllEndpoint.EndpointResponse>>
 {
+    private readonly IDbConnection _dbConnection = dbConnection;
+
     public override void Configure()
     {
         Get(Constants.Routes.EmployeeBaseRoute);
         AllowAnonymous();
     }
 
-    public override Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(CancellationToken ct)
     {
         if (ct.IsCancellationRequested)
         {
-            return Task.FromResult(new List<EndpointResponse>());
+            Response = new List<EndpointResponse>();
         }
-        
-        Response = new List<EndpointResponse>()
-        {
-            new(1,"Jhon Doe", 30),
-            new(2,"Mike Saul", 31),
-        };
-        return Task.CompletedTask;
+
+        const string sql = "SELECT \"Id\", \"Name\", \"Age\", \"Salary\" FROM \"Employee\"";
+        var result = (await _dbConnection.ExecuteQueryAsync<EndpointResponse>(sql, cancellationToken: ct)).ToList();
+        Response = result;
     }
     
-    public record EndpointResponse(int Id, string Name, int Age);
+    public record EndpointResponse(int Id, string Name, int Age, decimal Salary);
 }

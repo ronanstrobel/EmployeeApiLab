@@ -11,6 +11,11 @@
       <PackageReference Include="FluentMigrator.Runner.Core" Version="5.2.0" />
       <PackageReference Include="FluentMigrator.Runner.Postgres" Version="5.2.0" />
       <PackageReference Include="Npgsql" Version="8.0.2" />
+      <PackageReference Include="RepoDb" Version="1.13.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\CrudEmployee.Domain\CrudEmployee.Domain.csproj" />
     </ItemGroup>
 
 </Project>

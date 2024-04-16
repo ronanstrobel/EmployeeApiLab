@@ -1,9 +1,12 @@
+using System.Data;
 using CrudEmployee.Api.Utils;
+using CrudEmployee.Domain.Abstractions.Repositories;
 using FastEndpoints;
+using RepoDb;
 
 namespace CrudEmployee.Api.Employee;
 
-public class CreateEndpoint : Endpoint<CreateEndpoint.Request, int>
+public class CreateEndpoint(IEmployeeRepository employeeRepository) : Endpoint<CreateEndpoint.Request, long>
 {
     public override void Configure()
     {
@@ -11,16 +14,19 @@ public class CreateEndpoint : Endpoint<CreateEndpoint.Request, int>
         AllowAnonymous();
     }
 
-    public override Task HandleAsync(Request req, CancellationToken ct)
+    public override async Task HandleAsync(Request req, CancellationToken ct)
     {
         if (ct.IsCancellationRequested)
         {
-            return Task.FromResult(0);
+            return ;
         }
+
+        var employee = new Domain.Entities.Employee(req.Name, req.Age, req.Salary);
         
-        
-        return Task.FromResult(1);
+        await employeeRepository.InsertAsync(employee, ct);
+
+        Response = employee.Id;
     }
     
-    public record Request(string Name, int Age);
+    public record Request(string Name, short Age, decimal Salary);
 }

@@ -1,4 +1,5 @@
 using FluentMigrator;
+using FluentMigrator.Postgres;
 
 namespace CrudEmployee.Infrastructure.Database.Migrations;
 
