@@ -1,22 +1,26 @@
-using CrudEmployee.Api.Utils;
 using CrudEmployee.Infrastructure.Database.Migrations;
 using FluentMigrator.Runner;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Npgsql;
 
-namespace CrudEmployee.Api.Configurations;
+namespace CrudEmployee.Infrastructure.Database;
 
-public static class Migrations
+public class RunMigrationService(ILogger<RunMigrationService> logger, string? connectionString, string? connectionStringMasterDb)
 {
-    public static void RunMigrations(this WebApplication app)
+    private readonly ILogger<RunMigrationService> _logger = logger;
+    private readonly string? _connectionString = connectionString ?? throw new ArgumentNullException(connectionString);
+    private readonly string? _connectionStringMasterDb = connectionStringMasterDb ?? throw new ArgumentNullException(connectionStringMasterDb);
+
+    public  void RunMigrations()
     {
-        using var serviceProvider = CreateServices(app.Configuration);
+        using var serviceProvider = CreateServices();
         using var scope = serviceProvider.CreateScope();
-        UpdateDatabase(scope.ServiceProvider, app);
+        UpdateDatabase(scope.ServiceProvider);
     }
 
-    static ServiceProvider CreateServices(IConfiguration configuration)
+    private ServiceProvider CreateServices()
     {
-        var connectionString = configuration.GetConnectionString("employeecrud");
         return new ServiceCollection()
             // Add common FluentMigrator services
             .AddFluentMigratorCore()
@@ -36,24 +40,15 @@ public static class Migrations
     /// <summary>
     /// Update the database
     /// </summary>
-    private static void UpdateDatabase(IServiceProvider serviceProvider, WebApplication app)
+    private void UpdateDatabase(IServiceProvider serviceProvider)
     {
         var runner = serviceProvider.GetRequiredService<IMigrationRunner>();
-        EnsureDatabaseCreated(app.Configuration, app.Logger);
-        
-        // Execute the migrations
+        EnsureDatabaseCreated();
         runner.MigrateUp();
     }
     
-    private static void EnsureDatabaseCreated(IConfiguration configuration, ILogger logger)
+    private void EnsureDatabaseCreated()
     {
-        var connectionStringMasterDb = configuration.GetConnectionString("postgresMasterDb");
-        
-        if (connectionStringMasterDb is null)
-        {
-            throw new ArgumentNullException(nameof(connectionStringMasterDb));
-        }
-        
         using NpgsqlConnection conn = new NpgsqlConnection(connectionStringMasterDb);
         var dbnameToBeCreated = "employeecrud";
         var dbExists = VerifyIfDbExists(dbnameToBeCreated, conn);
